@@ -282,7 +282,7 @@ document.addEventListener("change",function(e){var t=e.target;if(t.dataset&&t.da
 var rb=document.getElementById("reset"),armed=false;
 rb.addEventListener("click",function(){
   if(!armed){armed=true;rb.textContent="Wirklich alles löschen? Nochmal tippen";setTimeout(function(){armed=false;rb.textContent="Alles zurücksetzen"},3000);return}
-  var keepPt=S.pt;S=fresh();S.pt=keepPt||"";armed=false;rb.textContent="Alles zurücksetzen";newSess();render();
+  var keepPt=S.pt;S=fresh();S.pt=keepPt||"";armed=false;rb.textContent="Alles zurücksetzen";newSess();tmAct("rs");MIN0=T.min;render();
 });
 /* Firebase-Live */
 var CFG={apiKey:"AIzaSyCs1S1-FOm2mlPjC1drXVMof-FrzcfwLKU",authDomain:"goalcounter-92954.firebaseapp.com",projectId:"goalcounter-92954",storageBucket:"goalcounter-92954.firebasestorage.app",messagingSenderId:"167600415596",appId:"1:167600415596:web:4e3af399368df44d6a4949"};
@@ -296,7 +296,7 @@ if(!HID)newSess();
 var lst=document.getElementById("lst"),lend=document.getElementById("lend");
 function st(t,c){lst.textContent=t;lst.style.color=c||"var(--mu)"}
 function flat(f){var o=[];for(var p=0;p<6;p++)o.push(f.s[p][0],f.s[p][1]);return o}
-function pl(s){return{owner:FB.uid,code:CODE,status:s||(ENDED?"beendet":"live"),ev:S.ev,n:S.n,per:S.per,cur:S.cur,f:S.f.map(function(f){return{h:f.h,a:f.a,s:flat(f)}}),t:{min:T.min,run:T.run,end:T.run?T.end:0,left:T.left},ts:FB.F.serverTimestamp()}}
+function pl(s){return{owner:FB.uid,code:CODE,status:s||(ENDED?"beendet":"live"),ev:S.ev,fresh:isFresh(),n:S.n,per:S.per,cur:S.cur,f:S.f.map(function(f){return{h:f.h,a:f.a,s:flat(f)}}),t:{min:T.min,run:T.run,end:T.run?T.end:0,left:T.left},ts:FB.F.serverTimestamp()}}
 function push(){if(!FB)return;if(ARCH)FB.F.setDoc(FB.F.doc(FB.db,"historie",HID),pl(),{merge:true}).catch(function(){});FB.F.setDoc(FB.F.doc(FB.db,"spiele",CODE),pl()).then(function(){st("\u25cf live","#3fc277")}).catch(function(e){st("Fehler: "+(e.code||"Senden"),"var(--rd)")})}
 function sched(){if(!FB)return;clearTimeout(_st);_st=setTimeout(function(){ENDED=false;push();lend.disabled=false},350)}
 var _ta=tmAct;tmAct=function(a){_ta(a);sched()};
@@ -318,6 +318,10 @@ FB={db:F.getFirestore(app),uid:us.uid,F:F};
 push();
 }catch(e){st("offline (nur lokal)","var(--rd)")}})();
 document.addEventListener("input",function(e){if(e.target.id==="spt"){S.pt=e.target.value;save()}});
+var MIN0=T.min;
+function isFresh(){var d=fresh();if(S.n!==d.n||S.per!==d.per||S.cur!==d.cur||S.ev.length)return false;
+for(var i=0;i<3;i++){var f=S.f[i],e=d.f[i];if(f.h!==e.h||f.a!==e.a)return false;for(var p=0;p<6;p++)if(f.s[p][0]||f.s[p][1])return false}
+return !T.run&&T.left===T.min*60&&T.min===MIN0}
 var lastEv=null,pkTm=0;
 function el(){var l=T.run?Math.max(0,Math.round((T.end-Date.now())/1000)):T.left,tot=T.min*60;return(!T.run&&l>=tot)?-1:Math.min(tot,tot-l)}
 function fmtEl(x){return x<0?"":(Math.floor(x/60)+1)+". Min."}
