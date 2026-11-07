@@ -3,7 +3,7 @@
   "short_name": "Hardt Live",
   "id": "torzaehler-zuschauer",
   "start_url": "zuschauer.html",
-  "scope": "./",
+  "scope": "zuschauer.html",
   "display": "standalone",
   "background_color": "#0d1510",
   "theme_color": "#0d1510",

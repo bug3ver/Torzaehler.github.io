@@ -3,7 +3,7 @@
   "short_name": "Torzähler",
   "id": "torzaehler-trainer",
   "start_url": "trainer.html",
-  "scope": "./",
+  "scope": "trainer.html",
   "display": "standalone",
   "background_color": "#0d1510",
   "theme_color": "#0d1510",
