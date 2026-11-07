@@ -137,6 +137,15 @@ tr.cur td:first-child{box-shadow:inset 4px 0 0 var(--fc)}
 body.vw #vwrap{display:block}
 body.vw .top,body.vw #fields,body.vw #live,body.vw #reset{display:none}
 #vwf{width:100%;height:calc(100vh - 90px);height:calc(100dvh - 90px);border:0;border-radius:14px;background:transparent}
+#pk{position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:101;display:none;background:var(--card);border:2px solid var(--ac);border-radius:18px;padding:12px;box-shadow:0 10px 40px rgba(0,0,0,.6);max-height:60vh;overflow:auto}
+#pk.on{display:block}
+.pkh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:15px}
+#pkt{color:var(--mu);font-size:13px}
+#pkb{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+#pkb button{padding:14px 4px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:var(--tx);font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#pks{width:100%;margin-top:8px;padding:12px;border-radius:10px;border:0;background:rgba(255,255,255,.08);color:var(--mu);font-size:14px;font-weight:700}
+textarea{width:100%;padding:8px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(0,0,0,.3);color:var(--tx);font-size:15px;font-family:inherit;margin:4px 0 8px;resize:vertical}
+#rost{--fc:#3fc277;--ft:#1b3526}
 </style>
 <link rel="manifest" href="manifest-trainer.json"><meta name="theme-color" content="#0d1510"><link rel="apple-touch-icon" href="icon-192.png">
 </head>
@@ -161,17 +170,20 @@ body.vw .top,body.vw #fields,body.vw #live,body.vw #reset{display:none}
 <div class="lv"><button id="lopen">Eltern-Ansicht</button><button id="lcopy">Link teilen</button><button id="lend">Spiel abschließen</button></div></div>
 <button class="reset" id="reset">Alles zurücksetzen</button>
 
+<div id="pk"><div class="pkh"><b>Wer hat getroffen?</b><span id="pkt"></span></div><div id="pkb"></div><button id="pks">Ohne Spieler</button></div>
 <div id="ask"><span>Auch für Feld 2 übernehmen?</span><button id="ay">Ja</button><button id="an">Nein</button></div>
 <div id="sad"><canvas id="cv2"></canvas><div id="sd"><i>😢</i><b>Gegentor …</b></div></div>
 <div id="fx"><canvas id="cv"></canvas><div id="toor"><svg width="90" height="108"><use href="#crest"/></svg><b>TOOOR!</b><span id="tn">SC Hardt</span></div></div>
 
 <script>
 var KEY="torzaehler-v2";
-function fresh(){var f=function(){return{h:"SC Hardt",a:"Gast",s:[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]}};return{n:1,per:2,cur:0,f:[f(),f(),f()]}}
+function fresh(){var f=function(){return{h:"SC Hardt",a:"Gast",s:[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]}};return{n:1,per:2,cur:0,f:[f(),f(),f()],ev:[],pt:""}}
 var S=fresh();
 try{var r=localStorage.getItem(KEY);if(r){S=JSON.parse(r)}}catch(e){}
 var d0=fresh();while(S.f.length<3)S.f.push(d0.f[S.f.length]);
 S.f.forEach(function(f){while(f.s.length<6)f.s.push([0,0])});
+if(!S.ev)S.ev=[];
+if(S.pt===undefined)S.pt=S.f.map(function(f){return f.pt||""}).filter(Boolean).join("\n");
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}sched()}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function crest(w){return'<svg width="'+w+'" height="'+Math.round(w*1.2)+'"><use href="#crest"/></svg>'}
@@ -198,7 +210,10 @@ function render(){
     +'</div></div>';
     res+='<div class="card f'+(i+1)+'"><h2><span>Ergebnis Spielfeld '+(i+1)+'</span></h2><div class="total">'+th+' : '+ta+'</div><div class="sub">'+esc(f.h)+' – '+esc(f.a)+' · Gesamt</div><table><tr><th>Spiel</th><th class="h">'+esc(f.h)+'</th><th></th><th class="g">'+esc(f.a)+'</th></tr>'+rows+'</table></div>';
   }
-  document.getElementById("fields").innerHTML=out+res;
+  var rost='<div class="card" id="rost"><div class="lh"><b>Spielerliste SC Hardt</b></div>';
+  rost+='<span class="lbl">F\u00fcr alle Spielfelder \u00b7 ein Name pro Zeile</span><textarea id="spt" rows="5" placeholder="z. B. Max&#10;Lena&#10;Tim">'+esc(S.pt||"")+'</textarea>';
+  rost+='<div class="lbl" style="text-transform:none;letter-spacing:0">Tipp: nur Vornamen oder R\u00fcckennummern \u2013 die Eltern-Ansicht ist per Link \u00f6ffentlich sichtbar.</div></div>';
+  document.getElementById("fields").innerHTML=out+res+rost;
   save();
 }
 /* Torjubel */
@@ -257,8 +272,8 @@ document.addEventListener("click",function(e){
   if(b){S[b.dataset.k]=+b.dataset.v;render();return}
   var g=e.target.closest("[data-g]");
   if(g){var gi=+g.dataset.g,t=+g.dataset.t,d=+g.dataset.d,s=S.f[gi].s[S.cur],old=s[t];
-    s[t]=Math.max(0,old+d);render();
-    var tn=S.f[gi][t?"a":"h"],on=S.f[gi][t?"h":"a"];if(d===1){if(/hardt/i.test(tn))goal(tn);else if(/hardt/i.test(on))sad()}}
+    s[t]=Math.max(0,old+d);var hs=/hardt/i.test(S.f[gi][t?"a":"h"]);if(hs&&d===1&&s[t]>old)addEv(gi);if(hs&&d===-1&&s[t]<old)delEv(gi);render();
+    var tn=S.f[gi][t?"a":"h"],on=S.f[gi][t?"h":"a"];if(d===1){if(/hardt/i.test(tn)){goal(tn);askPl(gi)}else if(/hardt/i.test(on))sad()}}
 });
 document.addEventListener("input",function(e){var t=e.target;if(t.dataset&&t.dataset.f!==undefined){S.f[+t.dataset.f][t.dataset.t]=t.value;save()}});
 document.addEventListener("change",function(e){var t=e.target;if(t.dataset&&t.dataset.f!==undefined){
@@ -281,7 +296,7 @@ if(!HID)newSess();
 var lst=document.getElementById("lst"),lend=document.getElementById("lend");
 function st(t,c){lst.textContent=t;lst.style.color=c||"var(--mu)"}
 function flat(f){var o=[];for(var p=0;p<6;p++)o.push(f.s[p][0],f.s[p][1]);return o}
-function pl(s){return{owner:FB.uid,code:CODE,status:s||(ENDED?"beendet":"live"),n:S.n,per:S.per,cur:S.cur,f:S.f.map(function(f){return{h:f.h,a:f.a,s:flat(f)}}),t:{min:T.min,run:T.run,end:T.run?T.end:0,left:T.left},ts:FB.F.serverTimestamp()}}
+function pl(s){return{owner:FB.uid,code:CODE,status:s||(ENDED?"beendet":"live"),ev:S.ev,n:S.n,per:S.per,cur:S.cur,f:S.f.map(function(f){return{h:f.h,a:f.a,s:flat(f)}}),t:{min:T.min,run:T.run,end:T.run?T.end:0,left:T.left},ts:FB.F.serverTimestamp()}}
 function push(){if(!FB)return;if(ARCH)FB.F.setDoc(FB.F.doc(FB.db,"historie",HID),pl(),{merge:true}).catch(function(){});FB.F.setDoc(FB.F.doc(FB.db,"spiele",CODE),pl()).then(function(){st("\u25cf live","#3fc277")}).catch(function(e){st("Fehler: "+(e.code||"Senden"),"var(--rd)")})}
 function sched(){if(!FB)return;clearTimeout(_st);_st=setTimeout(function(){ENDED=false;push();lend.disabled=false},350)}
 var _ta=tmAct;tmAct=function(a){_ta(a);sched()};
@@ -302,6 +317,20 @@ var us=au.currentUser||(await U.signInAnonymously(au)).user;
 FB={db:F.getFirestore(app),uid:us.uid,F:F};
 push();
 }catch(e){st("offline (nur lokal)","var(--rd)")}})();
+document.addEventListener("input",function(e){if(e.target.id==="spt"){S.pt=e.target.value;save()}});
+var lastEv=null,pkTm=0;
+function el(){var l=T.run?Math.max(0,Math.round((T.end-Date.now())/1000)):T.left,tot=T.min*60;return(!T.run&&l>=tot)?-1:Math.min(tot,tot-l)}
+function fmtEl(x){return x<0?"":(Math.floor(x/60)+1)+". Min."}
+function names(){var seen={};return(S.pt||"").split("\n").map(function(x){return x.trim()}).filter(function(x){if(!x||seen[x])return false;seen[x]=1;return true}).slice(0,40)}
+function closePk(){document.getElementById("pk").classList.remove("on");clearTimeout(pkTm)}
+function addEv(i){lastEv={f:i,g:S.cur,t:el(),p:""};S.ev.push(lastEv)}
+function delEv(i){for(var k=S.ev.length-1;k>=0;k--){if(S.ev[k].f===i&&S.ev[k].g===S.cur){if(S.ev[k]===lastEv)closePk();S.ev.splice(k,1);break}}}
+function askPl(i){var nm=names(i);if(!nm.length||!lastEv)return;var ev=lastEv;
+document.getElementById("pkt").textContent="Spielfeld "+(i+1)+(ev.t>=0?" \u00b7 "+fmtEl(ev.t):"");
+var b=document.getElementById("pkb");b.innerHTML=nm.map(function(n,k){return'<button data-pk="'+k+'">'+esc(n)+'</button>'}).join("");
+b.onclick=function(e){var x=e.target.closest("[data-pk]");if(!x)return;ev.p=nm[+x.dataset.pk];closePk();save()};
+document.getElementById("pks").onclick=closePk;
+document.getElementById("pk").classList.add("on");clearTimeout(pkTm);pkTm=setTimeout(closePk,12000)}
 function showTab(v){document.body.classList.toggle("vw",v);document.getElementById("tz").className=v?"":"on";document.getElementById("tv").className=v?"on":"";
 if(v){var fr=document.getElementById("vwf");if(fr.dataset.c!==CODE){fr.dataset.c=CODE;fr.src=plink()}}window.scrollTo(0,0)}
 document.getElementById("tz").onclick=function(){showTab(false)};
