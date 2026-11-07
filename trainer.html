@@ -233,10 +233,10 @@ function goal(name){
 /* Dropdown Anzahl Spiele */
 document.addEventListener("change",function(e){var t=e.target;if(t.dataset&&t.dataset.sel){S[t.dataset.sel]=+t.value;render()}});
 /* Gastname übernehmen */
-var pend="",askEl=document.getElementById("ask");
-function ask(n){pend=n;askEl.querySelector("span").textContent=S.n>2?"Auch für Feld 2 und 3 übernehmen?":"Auch für Feld 2 übernehmen?";askEl.classList.add("on")}
-document.getElementById("ay").onclick=function(){for(var k=1;k<S.n;k++)S.f[k].a=pend;askEl.classList.remove("on");render()};
-document.getElementById("an").onclick=function(){askEl.classList.remove("on")};
+var pend="",pendK={},askEl=document.getElementById("ask");
+function ask(k){pendK[k]=1;askEl.querySelector("span").textContent=S.n>2?"Auch für Feld 2 und 3 übernehmen?":"Auch für Feld 2 übernehmen?";askEl.classList.add("on")}
+document.getElementById("ay").onclick=function(){for(var k=1;k<S.n;k++){for(var q in pendK)S.f[k][q]=S.f[0][q]}pendK={};askEl.classList.remove("on");render()};
+document.getElementById("an").onclick=function(){pendK={};askEl.classList.remove("on")};
 /* Gegentor */
 var sdv=document.getElementById("sad"),cv2=document.getElementById("cv2"),stm;
 function sad(){
@@ -277,12 +277,12 @@ document.addEventListener("click",function(e){
 });
 document.addEventListener("input",function(e){var t=e.target;if(t.dataset&&t.dataset.f!==undefined){S.f[+t.dataset.f][t.dataset.t]=t.value;save()}});
 document.addEventListener("change",function(e){var t=e.target;if(t.dataset&&t.dataset.f!==undefined){
-  if(t.dataset.f==="0"&&t.dataset.t==="a"&&S.n>=2&&(S.f[1].a!==S.f[0].a||(S.n>2&&S.f[2].a!==S.f[0].a)))ask(S.f[0].a);
+  var kk=t.dataset.t;if(t.dataset.f==="0"&&(kk==="a"||kk==="h")&&S.n>=2&&(S.f[1][kk]!==S.f[0][kk]||(S.n>2&&S.f[2][kk]!==S.f[0][kk])))ask(kk);
   render()}});
 var rb=document.getElementById("reset"),armed=false;
 rb.addEventListener("click",function(){
   if(!armed){armed=true;rb.textContent="Wirklich alles löschen? Nochmal tippen";setTimeout(function(){armed=false;rb.textContent="Alles zurücksetzen"},3000);return}
-  S=fresh();armed=false;rb.textContent="Alles zurücksetzen";newSess();render();
+  var keepPt=S.pt;S=fresh();S.pt=keepPt||"";armed=false;rb.textContent="Alles zurücksetzen";newSess();render();
 });
 /* Firebase-Live */
 var CFG={apiKey:"AIzaSyCs1S1-FOm2mlPjC1drXVMof-FrzcfwLKU",authDomain:"goalcounter-92954.firebaseapp.com",projectId:"goalcounter-92954",storageBucket:"goalcounter-92954.firebasestorage.app",messagingSenderId:"167600415596",appId:"1:167600415596:web:4e3af399368df44d6a4949"};
