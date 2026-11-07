@@ -131,6 +131,7 @@ tr.cur td:first-child{box-shadow:inset 4px 0 0 var(--fc)}
 .lv button#lend{background:linear-gradient(180deg,#4ad588,#1f8a4c);border:0;color:#fff}
 .lv button:disabled{opacity:.45}
 </style>
+<link rel="manifest" href="manifest-trainer.json"><meta name="theme-color" content="#0d1510"><link rel="apple-touch-icon" href="icon-192.png">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -294,5 +295,6 @@ push();
 }catch(e){st("offline (nur lokal)","var(--rd)")}})();
 render();tmShow();
 </script>
+<script>if("serviceWorker"in navigator)addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})</script>
 </body>
 </html>
