@@ -393,7 +393,7 @@ S.f[fi].s[g][tm]+=1;if(own)S.ev.push(ev);render();
 var s=S.f[fi].s[g];done(s[0],s[1]);return}
 x.f[fi].s[2*g+tm]+=1;var evs=(x.ev||[]).slice();if(own)evs.push(ev);
 m.textContent="Speichere \u2026";
-FB.F.updateDoc(FB.F.doc(FB.db,"historie",id),{f:x.f.map(function(q){return{h:q.h,a:q.a,s:q.s}}),ev:evs,ts:FB.F.serverTimestamp()}).then(function(){done(x.f[fi].s[2*g],x.f[fi].s[2*g+1])}).catch(function(e){m.textContent="Fehler: "+(e.code||"Speichern")+" \u2013 nur das Ger\u00e4t, das das Spiel angelegt hat, darf es \u00e4ndern.";loadH(true)})}
+FB.F.updateDoc(FB.F.doc(FB.db,"historie",id),{f:x.f.map(function(q){return{h:q.h,a:q.a,s:q.s}}),ev:evs,ts:FB.F.serverTimestamp()}).then(function(){done(x.f[fi].s[2*g],x.f[fi].s[2*g+1])}).catch(function(e){m.textContent="Fehler: "+(e.code||"Speichern")+" \u2013 bitte die Firebase-Regeln pr\u00fcfen.";loadH(true)})}
 var MIN0=T.min;
 function isFresh(){var d=fresh();if(S.n!==d.n||S.per!==d.per||S.cur!==d.cur||S.ev.length)return false;
 for(var i=0;i<3;i++){var f=S.f[i],e=d.f[i];if(f.h!==e.h||f.a!==e.a)return false;for(var p=0;p<6;p++)if(f.s[p][0]||f.s[p][1])return false}
