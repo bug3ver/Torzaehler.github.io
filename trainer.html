@@ -146,13 +146,14 @@ body.vw .top,body.vw #fields,body.vw #live,body.vw #reset{display:none}
 #pks{width:100%;margin-top:8px;padding:12px;border-radius:10px;border:0;background:rgba(255,255,255,.08);color:var(--mu);font-size:14px;font-weight:700}
 textarea{width:100%;padding:8px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(0,0,0,.3);color:var(--tx);font-size:15px;font-family:inherit;margin:4px 0 8px;resize:vertical}
 #rost{--fc:#3fc277;--ft:#1b3526}
-#nach summary,#hed summary{cursor:pointer;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-size:13px}
+#nach summary,#hed summary,#rost summary{cursor:pointer;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-size:13px}
 #nach label,#hed label{display:block;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--mu);margin-top:8px}
 #nach select,#nach input,#hed select,#hed input{width:100%;margin-top:4px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.3);color:var(--tx);font-size:16px}
 .nr{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 #nbtn,#hbtn{width:100%;margin-top:12px;padding:14px;border-radius:12px;border:0;background:linear-gradient(180deg,#4ad588,#1f8a4c);color:#fff;font-size:16px;font-weight:800}
 #nmsg,#hmsg{margin-top:8px;font-size:13px;color:#3fc277}
 body.vw #nach,body.vw #hed{display:none}
+#rost .lbl{display:block;margin-top:8px}
 </style>
 <link rel="manifest" href="manifest-trainer.json"><meta name="theme-color" content="#0d1510"><link rel="apple-touch-icon" href="icon-192.png">
 </head>
@@ -172,17 +173,12 @@ body.vw #nach,body.vw #hed{display:none}
 <div class="c"><button data-tm="8" id="b8">8'</button><button data-tm="10" id="b10">10'</button><button data-tm="12" id="b12">12'</button><button data-tm="15" id="b15">15'</button><button data-tm="rs">↺</button></div><button class="go" data-tm="go" id="bgo">▶ Start</button></div>
 </div>
 <div id="fields"></div>
-<details class="card" id="nach"><summary>Tor nachtragen (aktuelle Spiele)</summary>
-<div class="nr"><label>Spielfeld<select id="nf"></select></label><label>Spiel<select id="ng"></select></label></div>
-<div class="nr"><label>Mannschaft<select id="nt"></select></label><label>Minute<input id="nm" type="number" min="1" max="60" inputmode="numeric" placeholder="z. B. 10"></label></div>
-<label>Spieler<input id="np" list="npl" placeholder="Name (optional)"></label><datalist id="npl"></datalist>
-<button id="nbtn">Tor eintragen</button><div id="nmsg"></div></details>
 <details class="card" id="hed"><summary>Historie bearbeiten</summary>
 <div class="lbl" style="text-transform:none;letter-spacing:0;margin-top:8px">Ein abgeschlossenes Spiel auswählen und ein Tor nachtragen.</div>
 <label>Abgeschlossenes Spiel<select id="hsel"></select></label>
 <div class="nr"><label>Spielfeld<select id="hf"></select></label><label>Spiel<select id="hg"></select></label></div>
 <div class="nr"><label>Mannschaft<select id="ht"></select></label><label>Minute<input id="hm" type="number" min="1" max="60" inputmode="numeric" placeholder="z. B. 10"></label></div>
-<label>Spieler<input id="hp" list="npl" placeholder="Name (optional)"></label>
+<label>Spieler<input id="hp" list="npl" placeholder="Name (optional)"></label><datalist id="npl"></datalist>
 <button id="hbtn">Tor hinzufügen</button><div id="hmsg"></div></details>
 <div id="vwrap"><iframe id="vwf" title="Eltern-Ansicht"></iframe></div>
 <div class="card" id="live"><div class="lh"><b>Live für Eltern</b><span id="lst">verbinde …</span></div>
@@ -229,9 +225,9 @@ function render(){
     +'</div></div>';
     res+='<div class="card f'+(i+1)+'"><h2><span>Ergebnis Spielfeld '+(i+1)+'</span></h2><div class="total">'+th+' : '+ta+'</div><div class="sub">'+esc(f.h)+' – '+esc(f.a)+' · Gesamt</div><table><tr><th>Spiel</th><th class="h">'+esc(f.h)+'</th><th></th><th class="g">'+esc(f.a)+'</th></tr>'+rows+'</table></div>';
   }
-  var rost='<div class="card" id="rost"><div class="lh"><b>Spielerliste SC Hardt</b></div>';
+  var rop=document.getElementById("rost"),rost='<details class="card" id="rost"'+(rop&&rop.open?' open':'')+'><summary>Spielerliste SC Hardt</summary>';
   rost+='<span class="lbl">F\u00fcr alle Spielfelder \u00b7 ein Name pro Zeile</span><textarea id="spt" rows="5" placeholder="z. B. Max&#10;Lena&#10;Tim">'+esc(S.pt||"")+'</textarea>';
-  rost+='<div class="lbl" style="text-transform:none;letter-spacing:0">Tipp: nur Vornamen oder R\u00fcckennummern \u2013 die Eltern-Ansicht ist per Link \u00f6ffentlich sichtbar.</div></div>';
+  rost+='<div class="lbl" style="text-transform:none;letter-spacing:0">Tipp: nur Vornamen oder R\u00fcckennummern \u2013 die Eltern-Ansicht ist per Link \u00f6ffentlich sichtbar.</div></details>';
   document.getElementById("fields").innerHTML=out+res+rost;
   fillNach();
   save();
@@ -338,24 +334,7 @@ FB={db:F.getFirestore(app),uid:us.uid,F:F};
 push();
 }catch(e){st("offline (nur lokal)","var(--rd)")}})();
 document.addEventListener("input",function(e){if(e.target.id==="spt"){S.pt=e.target.value;save()}});
-function fillNach(){
-var nf=document.getElementById("nf"),ng=document.getElementById("ng"),nt=document.getElementById("nt");
-var vf=nf.value||"0",vg=ng.value||"0",vt=nt.value||"0",o="",i,p;
-for(i=0;i<S.n;i++)o+='<option value="'+i+'">Spielfeld '+(i+1)+'</option>';nf.innerHTML=o;o="";
-for(p=0;p<S.per;p++)o+='<option value="'+p+'">Spiel '+(p+1)+'</option>';ng.innerHTML=o;
-nf.value=+vf<S.n?vf:"0";ng.value=+vg<S.per?vg:"0";
-var f=S.f[+nf.value],hi=(/hardt/i.test(f.a)&&!/hardt/i.test(f.h))?"1":"0";
-nt.innerHTML='<option value="0">'+esc(f.h)+'</option><option value="1">'+esc(f.a)+'</option>';nt.value=nt.dataset.u?vt:hi;
-document.getElementById("npl").innerHTML=names().map(function(n){return'<option value="'+esc(n)+'">'}).join("")}
-document.getElementById("nf").onchange=function(){document.getElementById("nt").dataset.u="";fillNach()};
-document.getElementById("nt").onchange=function(){this.dataset.u="1"};
-document.getElementById("nbtn").onclick=function(){
-var fi=+document.getElementById("nf").value,g=+document.getElementById("ng").value,tm=+document.getElementById("nt").value,mi=parseInt(document.getElementById("nm").value,10),pn=document.getElementById("np").value.trim(),f=S.f[fi],nm=f[tm?"a":"h"];
-f.s[g][tm]+=1;
-if(/hardt/i.test(nm))S.ev.push({f:fi,g:g,t:(mi>0?(mi-1)*60:-1),p:pn});
-document.getElementById("np").value="";document.getElementById("nm").value="";
-render();
-document.getElementById("nmsg").textContent="Eingetragen: Spielfeld "+(fi+1)+", Spiel "+(g+1)+", "+nm+(mi>0?", "+mi+". Min.":"")+(pn?", "+pn:"")+" \u2713"}
+function fillNach(){document.getElementById("npl").innerHTML=names().map(function(n){return'<option value="'+esc(n)+'">'}).join("")}
 var HL={};
 function hdate(d){return d.datum&&d.datum.toDate?d.datum.toDate().toLocaleString("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):""}
 function hsum(d){return d.f.slice(0,d.n).map(function(f,i){var a=0,b=0;for(var p=0;p<d.per;p++){a+=f.s[2*p];b+=f.s[2*p+1]}return"F"+(i+1)+": "+f.h+" "+a+":"+b+" "+f.a}).join(" | ")}
